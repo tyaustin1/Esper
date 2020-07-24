@@ -1,10 +1,15 @@
 <template>
   <div id='card-search'>
-    <input type="text" v-model=cardName>
-    <button @click=getCard(cardName)>Make Call</button>
-    <p>
-      <img :src=imageUrl>
-    </p>
+    <b-form-textarea
+      id="textarea"
+      v-model="cardName"
+      placeholder="Enter something..."
+      rows="3"
+      max-rows="6"
+    ></b-form-textarea>
+    <button @click=getCards(cardName)>Make Call</button>
+   <img v-for="imageUrl in imageUrls" :src="imageUrl" :key="imageUrl"/>
+
   </div>
 </template>
 
@@ -16,7 +21,8 @@ export default {
   data () {
     return {
       cardName: '',
-      imageUrl: ''
+      imageUrl: '',
+      imageUrls: []
     };
   },
 
@@ -26,6 +32,32 @@ export default {
       this.card = response;
       this.imageUrl = this.card.data.imageUrl;
       });
+    },
+    getCards (cardName) {
+      let listOfCardNames = cardName.split('\n');
+      const headers = {
+  'Content-Type': 'application/json',
+}
+      axios({
+        method: 'post',
+        url: 'http://localhost:8080/cards',
+        headers: headers,
+        data: listOfCardNames
+        })
+        .then((response) => {
+            //handle success
+            console.log(response.data[0].imageUrl)
+            let cardArray = response.data;
+            console.log(cardArray);
+
+            cardArray.forEach(element => {
+              this.imageUrls.push(element.imageUrl)
+            });
+        })
+        .catch(function (response) {
+            //handle error
+            console.log(response);
+        });
     }
   }
   
